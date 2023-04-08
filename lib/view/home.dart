@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:utk/controllers/db_helper.dart';
 import 'package:utk/controllers/tambah_item_controller.dart';
 import 'package:utk/models/tambah_model.dart';
 import 'package:utk/view/edit_data.dart';
@@ -15,12 +16,32 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  List<Map<String, dynamic>> _allData = [];
+  bool _isLoading = true;
+
+  void refreshData() async {
+    final data = await SQLHelper.getAllData();
+    setState(() {
+      _allData = data;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  void initstate() {
+    super.initState();
+    refreshData();
+  }
+
   String searchBar = '';
   TextEditingController add = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Color.fromRGBO(30, 30, 30, 1)),
+        ),
         centerTitle: false,
         backgroundColor: const Color.fromRGBO(171, 229, 188, 1),
         // leading: Icon(Icons.dehaze),
@@ -29,38 +50,18 @@ class _HomepageState extends State<Homepage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: const [
             Text(
-              'Hi, Yanin!',
-              style: TextStyle(
-                  color: Colors.black, fontFamily: 'BrandonText', fontSize: 16),
-            ),
-            Text(
               'Apa Yang Ingin Kamu Catat?',
               style: TextStyle(
-                  fontSize: 20, color: Colors.black, fontFamily: 'BrandonText'),
+                  fontSize: 20,
+                  color: Colors.black,
+                  fontFamily: 'BrandonText',
+                  fontWeight: FontWeight.bold),
             )
           ],
         ),
-        // actions: [
-        //   Row(
-        //     children: [
-        //       GestureDetector(
-        //         onTap: () => Get.to(ProfilMenu()),
-        //         child: Padding(
-        //           padding: const EdgeInsets.only(right: 10),
-        //           child: CircleAvatar(
-        //             backgroundColor: Colors.white,
-        //             child: Icon(
-        //               Icons.person,
-        //               color: Colors.black,
-        //             ),
-        //           ),
-        //         ),
-        //       ),
-        //     ],
-        //   ),
-        // ],
+
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(70),
+          preferredSize: const Size.fromHeight(60),
           child: Padding(
             padding: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
             child: Container(
@@ -92,110 +93,99 @@ class _HomepageState extends State<Homepage> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child:
-            //  ListView(
-            //   children: [
-            //     Column(
-            //       crossAxisAlignment: CrossAxisAlignment.start,
-            //       children: [
-            //         Padding(
-            //           padding: const EdgeInsets.only(bottom: 16),
-            //           child: Text(
-            //             'Rekomendasi',
-            //             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            //           ),
-            //         ),
-            //         Row(
-            //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //           children: [
-            //             Text(
-            //               'Sedang Hangat',
-            //               style: TextStyle(
-            //                 fontWeight: FontWeight.bold,
-            //               ),
-            //             ),
-            //             Icon(Icons.keyboard_double_arrow_right)
-            //           ],
-            //         ),
-            //         Padding(
-            //           padding: const EdgeInsets.symmetric(vertical: 14),
-            //           child: Container(
-            //             padding: EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-            //             width: Get.width,
-            //             height: 148,
-            //             decoration: BoxDecoration(
-            //               borderRadius: BorderRadius.circular(7),
-            //             ),
-            //             child: Stack(
-            //               children: [
-            //                 Row(
-            //                   children: [
-            //                     Container(
-            //                       width: 94,
-            //                       height: 124,
-            //                       color: Colors.white,
-            //                     ),
-            //                     Padding(
-            //                       padding: const EdgeInsets.only(left: 10),
-            //                       child: Column(
-            //                         // crossAxisAlignment: CrossAxisAlignment.start,
-            //                         children: [
-            //                           Center(
-            //                             child: Text(
-            //                               'Dreams',
-            //                               style: TextStyle(
-            //                                 fontWeight: FontWeight.bold,
-            //                               ),
-            //                             ),
-            //                           )
-            //                         ],
-            //                       ),
-            //                     )
-            //                   ],
-            //                 ),
-            //               ],
-            //             ),
-            //           ),
-            //         ),
-            //         Divider(
-            //           color: Colors.grey.shade500,
-            //           height: 1,
-            //         ),
-            GetBuilder<TambahItemController>(builder: (context) {
-          if (searchBar.isEmpty) {
-            return ListView.builder(
-                shrinkWrap: true,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) => addItem(index: index),
-                itemCount: widget._tambahItem.listModel.length);
+        child: GetBuilder<TambahItemController>(builder: (context) {
+          if (widget._tambahItem.listModel.isNotEmpty) {
+            if (searchBar.isEmpty) {
+              return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) => addItem(index: index),
+                  itemCount: widget._tambahItem.listModel.length);
+            } else {
+              List<TambahModel> search = widget._tambahItem.findData(searchBar);
+              return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) => addItem2(index: index),
+                  itemCount: search.length);
+            }
           } else {
-            List<TambahModel> search = widget._tambahItem.findData(searchBar);
-            return ListView.builder(
-                shrinkWrap: true,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) => addItem2(index: index),
-                itemCount: search.length);
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: Icon(
+                      Icons.sticky_note_2_outlined,
+                      size: 100,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  Text(
+                    'Tidak ada catatan',
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: Color.fromRGBO(30, 30, 30, 1),
+                        fontFamily: 'BrandonText'),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                          side: BorderSide(
+                            color: Color.fromRGBO(30, 30, 30, 1),
+                          ),
+                        ),
+                        elevation: 0,
+                        backgroundColor: Color.fromRGBO(207, 173, 232, 1)),
+                    onPressed: () {
+                      Get.to(TambahItem());
+                    },
+                    child: Text(
+                      'Tambahkan catatan',
+                      style: TextStyle(
+                          fontSize: 16,
+                          color: Color.fromRGBO(30, 30, 30, 1),
+                          fontFamily: 'BrandonText'),
+                    ),
+                  )
+                ],
+              ),
+            );
           }
         }),
-        //       ],
-        //     ),
-        //   ],
-        // ),
       ),
       floatingActionButton: FloatingActionButton(
+        disabledElevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(
+            color: Color.fromRGBO(30, 30, 30, 1),
+          ),
+        ),
+        backgroundColor: Color.fromRGBO(207, 173, 232, 1),
         onPressed: () {
           Get.to(TambahItem());
         },
         elevation: 0,
-        child: const Icon(Icons.post_add),
+        child: const Icon(
+          Icons.add,
+          color: Colors.black,
+        ),
       ),
     );
   }
 
   Widget addItem({required int index}) {
     return GestureDetector(
-      onTap: () => Get.to(EditData(),
-          arguments: {"name": widget._tambahItem.listModel[index].name}),
+      onTap: () => Get.to(
+        EditData(),
+        arguments: {
+          "name": widget._tambahItem.listModel[index].name,
+          "desk": widget._tambahItem.listModel[index].desk
+        },
+      ),
       child: Padding(
         padding: const EdgeInsets.only(top: 10),
         child: Container(
@@ -204,7 +194,7 @@ class _HomepageState extends State<Homepage> {
             border: Border.all(color: const Color.fromRGBO(30, 30, 30, 1)),
             color: const Color.fromRGBO(255, 215, 135, 1),
           ),
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -213,12 +203,6 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   Row(
                     children: [
-                      // Container(
-                      //   width: 102,
-                      //   height: 124,
-                      //   color: Colors.grey,
-                      //   child: Image.asset('assets/ashley2.png'),
-                      // ),
                       Text(widget._tambahItem.findData(searchBar)[index].name!),
                     ],
                   ),
@@ -230,13 +214,13 @@ class _HomepageState extends State<Homepage> {
                         context: context,
                         builder: ((context) {
                           return AlertDialog(
-                            title: SvgPicture.asset(
-                              'assets/Delete.svg',
-                              height: 61,
-                              width: 46,
-                              color: const Color.fromRGBO(156, 156, 160, 1),
-                              fit: BoxFit.fitHeight,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              side: BorderSide(
+                                color: Color.fromRGBO(30, 30, 30, 1),
+                              ),
                             ),
+                            backgroundColor: Color.fromRGBO(207, 173, 232, 1),
                             content: Container(
                                 margin: const EdgeInsets.only(bottom: 10),
                                 height: 90,
@@ -245,8 +229,9 @@ class _HomepageState extends State<Homepage> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     const Text(
-                                      'Hapus Item',
+                                      'Hapus Catatan',
                                       style: TextStyle(
+                                          fontFamily: 'BrandonText',
                                           fontSize: 21,
                                           fontWeight: FontWeight.bold),
                                     ),
@@ -261,7 +246,7 @@ class _HomepageState extends State<Homepage> {
                                             style: TextStyle(
                                                 fontSize: 14,
                                                 color: Color.fromRGBO(
-                                                    156, 156, 160, 1)),
+                                                    30, 30, 30, 1)),
                                             textAlign: TextAlign.center,
                                           ),
                                           Row(
@@ -273,7 +258,7 @@ class _HomepageState extends State<Homepage> {
                                                 style: TextStyle(
                                                     fontSize: 14,
                                                     color: Color.fromRGBO(
-                                                        156, 156, 160, 1)),
+                                                        30, 30, 30, 1)),
                                               ),
                                               Text(
                                                 widget._tambahItem
@@ -364,7 +349,15 @@ class _HomepageState extends State<Homepage> {
                   )
                 ],
               ),
-              Text(widget._tambahItem.findData(searchBar)[index].desk!)
+              Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: Text(
+                  widget._tambahItem.findData(searchBar)[index].desk!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: Color.fromARGB(255, 99, 99, 99)),
+                ),
+              )
             ],
           ),
         ),
@@ -380,7 +373,9 @@ class _HomepageState extends State<Homepage> {
         child: Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: const Color.fromRGBO(30, 30, 30, 1)),
+            border: Border.all(
+              color: const Color.fromRGBO(30, 30, 30, 1),
+            ),
             color: const Color.fromRGBO(255, 215, 135, 1),
           ),
           padding: const EdgeInsets.all(8),
@@ -392,19 +387,19 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   Row(
                     children: [
-                      // Container(
-                      //   width: 102,
-                      //   height: 124,
-                      //   color: Colors.grey,
-                      //   child: Image.asset('assets/ashley2.png'),
-                      // ),
-                      Text(widget._tambahItem.findData(searchBar)[index].name!),
+                      Text(
+                        widget._tambahItem.findData(searchBar)[index].name!,
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ],
                   ),
                   const Icon(Icons.delete)
                 ],
               ),
-              Text(widget._tambahItem.findData(searchBar)[index].desk!)
+              Text(
+                widget._tambahItem.findData(searchBar)[index].desk!,
+              )
             ],
           ),
         ),
@@ -415,7 +410,7 @@ class _HomepageState extends State<Homepage> {
   @override
   void initState() {
     widget._tambahItem.dummyAddData();
-    
+
     super.initState();
   }
 }

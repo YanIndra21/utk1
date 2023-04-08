@@ -38,6 +38,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   get: ^4.6.5
   flutter_svg: ^1.1.6
+  sqflite: ^2.2.6
 
 dev_dependencies:
   flutter_test:
@@ -86,11 +87,11 @@ flutter:
     #       style: italic
     - family: BrandonText
       fonts:
-        - asset: fonts/BrandonText-Bold.otf
-        - asset: fonts/BrandonText-Light.otf
-        - asset: fonts/BrandonText-Regular.otf
-        - asset: fonts/BrandonText-RegularItalic.otf
-        - asset: fonts/BrandonText-Thin.otf
+        # - asset: assets/fonts/
+        - asset: assets/fonts/BrandonText-Light.otf
+        - asset: assets/fonts/BrandonText-Regular.otf
+        - asset: assets/fonts/BrandonText-RegularItalic.otf
+        - asset: assets/fonts/BrandonText-Thin.otf
   #   - family: Trajan Pro
   #     fonts:
   #       - asset: fonts/TrajanPro.ttf

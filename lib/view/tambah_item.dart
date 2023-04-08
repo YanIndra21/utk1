@@ -1,8 +1,6 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
 import 'package:utk/controllers/tambah_item_controller.dart';
 
@@ -19,18 +17,22 @@ class _TambahItemState extends State<TambahItem> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red,
+        leading: GestureDetector(
+          onTap: () {
+            setState(() {
+              widget._editingController.add.clear(); 
+              widget._editingController.add2.clear();
+            });
+            Get.back();
+          },
+          child: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+          ),
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: Text('Tambah Item'),
-      ),
-      body: Column(
-        children: [
-          TextFormField(
-            controller: widget._editingController.add,
-          ),
-          TextFormField(
-            controller: widget._editingController.add2,
-          ),
+        actions: [
           GestureDetector(
             onTap: () {
               widget._editingController.dummyAddData();
@@ -38,25 +40,43 @@ class _TambahItemState extends State<TambahItem> {
                 log(widget._editingController.add.value.text.toString());
                 widget._editingController.add.clear();
               });
+              widget._editingController.add.clear();
+              widget._editingController.add2.clear();
               Get.back();
             },
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(7),
-                color: Colors.red,
-              ),
-              margin: const EdgeInsets.fromLTRB(16, 10, 16, 25),
-              height: 48,
-              width: 343,
-              child: const Center(
+            child: const Center(
+              child: Padding(
+                padding: EdgeInsets.only(right: 10),
                 child: Text(
                   'Simpan',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                       fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                      fontFamily: 'BrandonText'),
                 ),
               ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          TextFormField(
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            decoration: const InputDecoration(
+              hintText: 'Judul',
+            ),
+            controller: widget._editingController.add,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TextFormField(
+              controller: widget._editingController.add2,
+              keyboardType: TextInputType.multiline,
+              maxLines: null,
+              decoration: const InputDecoration(
+                  border: InputBorder.none, hintText: 'Mulai Mengetik'),
             ),
           ),
         ],

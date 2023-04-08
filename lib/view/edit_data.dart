@@ -13,44 +13,53 @@ class EditData extends StatefulWidget {
 class _EditDataState extends State<EditData> {
   final _editingController = Get.put(TambahItemController());
   String name = Get.arguments['name'];
+  String desk = Get.arguments['desk'];
 
   @override
   Widget build(BuildContext context) {
+    TextEditingController _desk = TextEditingController(text: desk);
     TextEditingController _name = TextEditingController(text: name);
     return Scaffold(
       appBar: AppBar(
+        actions: [
+          GestureDetector(
+            onTap: () => Get.back(),
+            child: const Center(
+                child: Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Text(
+                'Simpan',
+                style: TextStyle(
+                    color: Colors.black,
+                    fontFamily: 'BrandonText',
+                    fontSize: 16),
+              ),
+            )),
+          )
+        ],
+        leading: GestureDetector(
+            onTap: () {
+              Get.back();
+            },
+            child: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.black,
+            )),
         elevation: 0,
-        backgroundColor: Color.fromRGBO(171, 229, 188, 1),
-        title: Text(
-          'Edit',
-          style: TextStyle(fontFamily: 'BrandonText'),
-        ),
+        backgroundColor: const Color.fromRGBO(171, 229, 188, 1),
       ),
       body: Column(
         children: [
-          TextFormField(controller: _name),
           TextFormField(
-            controller: _editingController.edit2,
+            controller: _name,
+            textAlign: TextAlign.center,
           ),
-          GestureDetector(
-            onTap: () => Get.back(),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(7),
-                color: Colors.red,
-              ),
-              margin: const EdgeInsets.fromLTRB(16, 10, 16, 25),
-              height: 48,
-              width: 343,
-              child: const Center(
-                child: Text(
-                  'Simpan',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
+          TextFormField(
+            controller: _desk,
+            keyboardType: TextInputType.multiline,
+            maxLines: null,
+            decoration: const InputDecoration(
+              border: InputBorder.none,
             ),
           ),
         ],
