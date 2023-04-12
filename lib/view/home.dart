@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:utk/controllers/db_helper.dart';
 import 'package:utk/controllers/tambah_item_controller.dart';
 import 'package:utk/models/tambah_model.dart';
 import 'package:utk/view/edit_data.dart';
 import 'package:utk/view/tambah_item.dart';
+import 'package:flutter/gestures.dart';
 
 class Homepage extends StatefulWidget {
   final _tambahItem = Get.put(TambahItemController());
@@ -19,6 +19,7 @@ class _HomepageState extends State<Homepage> {
   List<Map<String, dynamic>> _allData = [];
   bool _isLoading = true;
 
+// GET ALL DATA
   void refreshData() async {
     final data = await SQLHelper.getAllData();
     setState(() {
@@ -33,13 +34,39 @@ class _HomepageState extends State<Homepage> {
     refreshData();
   }
 
+  final longPress = LongPressGestureRecognizer();
+
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+
+// CREATE DATA
+  Future<void> _addData() async {
+    await SQLHelper.createData(_nameController.text, _descController.text);
+  }
+
+// UPDATE DATA
+  Future<void> _updateData(int id) async {
+    await SQLHelper.updateData(id, _nameController.text, _descController.text);
+  }
+
+// DELETE DATA
+  Future<void> _deleteData(int id) async {
+    await SQLHelper.deleteData(id);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      backgroundColor: Colors.black,
+      content: Text(
+        'Catatan Dihapus',
+      ),
+    ));
+  }
+
   String searchBar = '';
-  TextEditingController add = TextEditingController();
+  // TextEditingController add = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           side: BorderSide(color: Color.fromRGBO(30, 30, 30, 1)),
         ),
         centerTitle: false,
@@ -92,7 +119,7 @@ class _HomepageState extends State<Homepage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
         child: GetBuilder<TambahItemController>(builder: (context) {
           if (widget._tambahItem.listModel.isNotEmpty) {
             if (searchBar.isEmpty) {
@@ -110,48 +137,54 @@ class _HomepageState extends State<Homepage> {
                   itemCount: search.length);
             }
           } else {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: Icon(
-                      Icons.sticky_note_2_outlined,
-                      size: 100,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  Text(
-                    'Tidak ada catatan',
-                    style: TextStyle(
-                        fontSize: 20,
-                        color: Color.fromRGBO(30, 30, 30, 1),
-                        fontFamily: 'BrandonText'),
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(7),
-                          side: BorderSide(
-                            color: Color.fromRGBO(30, 30, 30, 1),
-                          ),
+            return ListView(
+              children: [
+                Center(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 20, top: 150),
+                        child: Icon(
+                          Icons.sticky_note_2_outlined,
+                          size: 100,
+                          color: Colors.grey,
                         ),
-                        elevation: 0,
-                        backgroundColor: Color.fromRGBO(207, 173, 232, 1)),
-                    onPressed: () {
-                      Get.to(TambahItem());
-                    },
-                    child: Text(
-                      'Tambahkan catatan',
-                      style: TextStyle(
-                          fontSize: 16,
-                          color: Color.fromRGBO(30, 30, 30, 1),
-                          fontFamily: 'BrandonText'),
-                    ),
-                  )
-                ],
-              ),
+                      ),
+                      const Text(
+                        'Tidak ada catatan',
+                        style: TextStyle(
+                            fontSize: 20,
+                            color: Color.fromRGBO(30, 30, 30, 1),
+                            fontFamily: 'BrandonText'),
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(7),
+                              side: const BorderSide(
+                                color: Color.fromRGBO(30, 30, 30, 1),
+                              ),
+                            ),
+                            elevation: 0,
+                            backgroundColor:
+                                const Color.fromRGBO(207, 173, 232, 1)),
+                        onPressed: () {
+                          Get.to(TambahItem());
+                        },
+                        child: const Text(
+                          'Tambahkan catatan',
+                          style: TextStyle(
+                              fontSize: 16,
+                              color: Color.fromRGBO(30, 30, 30, 1),
+                              fontFamily: 'BrandonText'),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
             );
           }
         }),
@@ -160,11 +193,11 @@ class _HomepageState extends State<Homepage> {
         disabledElevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
-          side: BorderSide(
+          side: const BorderSide(
             color: Color.fromRGBO(30, 30, 30, 1),
           ),
         ),
-        backgroundColor: Color.fromRGBO(207, 173, 232, 1),
+        backgroundColor: const Color.fromRGBO(207, 173, 232, 1),
         onPressed: () {
           Get.to(TambahItem());
         },
@@ -179,6 +212,21 @@ class _HomepageState extends State<Homepage> {
 
   Widget addItem({required int index}) {
     return GestureDetector(
+      onLongPress: () {
+        showMenu(
+            context: context,
+            position: RelativeRect.fromLTRB(0, 1000, 0, 0),
+            items: [
+              PopupMenuItem(
+                child: Text("Delete"),
+                onTap: () {
+                  setState(() {
+                    widget._tambahItem.listModel.removeAt(index);
+                  });
+                },
+              ),
+            ]);
+      },
       onTap: () => Get.to(
         EditData(),
         arguments: {
@@ -206,147 +254,6 @@ class _HomepageState extends State<Homepage> {
                       Text(widget._tambahItem.findData(searchBar)[index].name!),
                     ],
                   ),
-                  GestureDetector(
-                    child: const Icon(Icons.delete),
-                    onTap: () {
-                      showDialog(
-                        useSafeArea: true,
-                        context: context,
-                        builder: ((context) {
-                          return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(
-                                color: Color.fromRGBO(30, 30, 30, 1),
-                              ),
-                            ),
-                            backgroundColor: Color.fromRGBO(207, 173, 232, 1),
-                            content: Container(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                height: 90,
-                                width: 335,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'Hapus Catatan',
-                                      style: TextStyle(
-                                          fontFamily: 'BrandonText',
-                                          fontSize: 21,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 10),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          const Text(
-                                            'Apa kamu yakin ingin menghapus data',
-                                            style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color.fromRGBO(
-                                                    30, 30, 30, 1)),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              const Text(
-                                                'dengan nama ',
-                                                style: TextStyle(
-                                                    fontSize: 14,
-                                                    color: Color.fromRGBO(
-                                                        30, 30, 30, 1)),
-                                              ),
-                                              Text(
-                                                widget._tambahItem
-                                                    .listModel[index].name!,
-                                                style: const TextStyle(
-                                                    fontSize: 14,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                            ],
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                )),
-                            actions: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  GestureDetector(
-                                    child: Container(
-                                      height: 48,
-                                      width: 133,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(7),
-                                        color: const Color.fromRGBO(
-                                            88, 86, 214, 1),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        // ignore: prefer_const_literals_to_create_immutables
-                                        children: [
-                                          const Text(
-                                            'Batalkan',
-                                            style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    onTap: () => Get.back(),
-                                  ),
-                                  GestureDetector(
-                                    child: Container(
-                                      height: 48,
-                                      width: 133,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(7),
-                                        color: const Color.fromRGBO(
-                                            241, 241, 241, 1),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: const [
-                                          Text(
-                                            'Ya, hapus',
-                                            style: TextStyle(
-                                                color: Color.fromRGBO(
-                                                    71, 75, 82, 1),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    onTap: () {
-                                      setState(() {
-                                        widget._tambahItem.listModel
-                                            .removeAt(index);
-                                      });
-
-                                      Get.back();
-                                    },
-                                  ),
-                                ],
-                              )
-                            ],
-                          );
-                        }),
-                      );
-                    },
-                  )
                 ],
               ),
               Padding(
@@ -355,7 +262,8 @@ class _HomepageState extends State<Homepage> {
                   widget._tambahItem.findData(searchBar)[index].desk!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Color.fromARGB(255, 99, 99, 99)),
+                  style:
+                      const TextStyle(color: Color.fromARGB(255, 99, 99, 99)),
                 ),
               )
             ],

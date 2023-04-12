@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:utk/view/home.dart';
+import 'package:utk/view/tes_longpress.dart';
 
 void main() {
   runApp(const MyApp());
